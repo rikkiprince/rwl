@@ -1,0 +1,7 @@
+<?php
+
+	$tableNamePrefix = "";
+	$mysqlUserName = "";
+	$mysqlPassword = "";
+
+?>
