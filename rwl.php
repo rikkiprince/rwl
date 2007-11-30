@@ -30,6 +30,60 @@
 	include("./user.php");
 	include("./calendar.php");
 
+	function registerGlobalPOST($name)
+	{
+		global ${$name};
+		
+		if(isset($_POST[$name]))
+			${$name} = $_POST[$name];
+	}
+
+	function registerGlobalGET($name)
+	{
+		global ${$name};
+		
+		if(isset($_GET[$name]))
+			${$name} = $_GET[$name];
+	}
+
+
+	/********************
+	REGISTER_GLOBALS
+	*********************/
+
+	registerGlobalGET('PHP_SELF');
+
+	registerGlobalGET('pageName');
+	
+	//$cm = $_GET['cm'];
+	//$cy = $_GET['cy'];
+	registerGlobalGET('cm');
+	registerGlobalGET('cy');
+	
+	registerGlobalGET('action');
+	
+	registerGlobalPOST('submit');
+	if(!isset($submit))
+		registerGlobalGET('submit');
+	
+	registerGlobalGET('login');
+	registerGlobalGET('enterLogin');
+	
+	registerGlobalGET('un');
+	registerGlobalGET('pw');
+	
+	registerGlobalGET('for');
+	
+	
+	/*registerGlobalGET('');
+	registerGlobalGET('');
+	registerGlobalGET('');
+	registerGlobalGET('');
+	registerGlobalGET('');
+	registerGlobalGET('');
+	registerGlobalGET('');*/
+	/********************/
+
 
 	if(!isset($pageName))
 	{
@@ -74,7 +128,11 @@
 
 	//echo para("you are user #$userID, $userName, level $userLevel");
 	
-
+	for($i=$userLevel; $i>=0; $i--)
+		registerGlobalPOST('newEntry'.$i);
+	//for($i=$userLevel; $i>=0; $i--)
+		//registerGlobalGET('');
+		
 
 	
 	$dh = getValidDate($pageName);
