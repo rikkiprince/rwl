@@ -35,15 +35,20 @@
 			$u = getUser();
 			if($u->id > -1)
 			{
-				echo para("Logged in as: $u->un");
+				echo para("Logged in as: $u->un [".ahref("rwl.php?pageName=$pageName&action=logout", "Logout")."]");
 			}
 			else
 			{
 				//echo para("Not logged in. ".ahref("./login.php?pageName=$pageName", "Login"));
 				//echo para("Not logged in. ".ahref("$PHP_SELF?action=login&pageName=$pageName", "Login"));
 				echo para("Not logged in.");
-				printLoginform($pageName, $un, $action);
+				printLoginForm($pageName, $un, $action);
 			}
+		}
+		
+		if(strtolower($action) == "logout")
+		{
+			logout();
 		}
 	}
 
@@ -75,10 +80,21 @@
 		else
 			false;
 	}
+	
+	function logout()
+	{
+		global $pageName;
+	
+		unset($_SESSION['userID']);
+		
+		redirectTo($pageName);
+	}
 
 	function passwordIsCorrect($un, $pw)
 	{
-		$checkUserPasswordSQL = "SELECT id FROM rwlUser WHERE rwlUser.un = '$un' AND ENCRYPT('$pw','rp') = rwlUser.epw;";
+		global $rwlUser;
+	
+		$checkUserPasswordSQL = "SELECT id FROM $rwlUser WHERE $rwlUser.un = '$un' AND ENCRYPT('$pw','rp') = $rwlUser.epw;";
 		//echo "<p>$checkUserPasswordSQL</p>";
 		$checkUserPasswordResult = mysql_query($checkUserPasswordSQL);
 		if(mysql_num_rows($checkUserPasswordResult)>0)
@@ -92,7 +108,10 @@
 
 	function checkUser($userID)
 	{
-		$getUserSQL = "SELECT * FROM rwlUser WHERE rwlUser.id = $userID";
+		
+		global $rwlUser;
+	
+		$getUserSQL = "SELECT * FROM $rwlUser WHERE $rwlUser.id = $userID";
 		$getUserResult = mysql_query($getUserSQL);
 		if(mysql_num_rows($getUserResult)<1)
 			return false;

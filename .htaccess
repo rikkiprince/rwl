@@ -1,0 +1,5 @@
+# ErrorDocument 404 /test/404.html
+# Redirect /test http://ecs.soton.ac.uk/~rfp102/pspvid/
+ ErrorDocument 404 /~rfp07r/rwl/http404.php
+DirectoryIndex rwl.php
+

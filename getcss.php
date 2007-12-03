@@ -6,10 +6,11 @@
 	function getStyleSheets($default)
 	{
 		global $cssDBRoot, $cssMinLevel;
+		global $rwlEntry;
 
 		// should it bring together all levels, or just do the top one?
-		//$getCSSSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes($cssDBRoot))."' ORDER BY rwlEntry.level DESC;";
-		$getCSSSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes($cssDBRoot))."' AND rwlEntry.level>=$cssMinLevel ORDER BY rwlEntry.level DESC;";
+		//$getCSSSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes($cssDBRoot))."' ORDER BY $rwlEntry.level DESC;";
+		$getCSSSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes($cssDBRoot))."' AND $rwlEntry.level>=$cssMinLevel ORDER BY $rwlEntry.level DESC;";
 		$getCSSResult = mysql_query($getCSSSQL);
 		if(mysql_num_rows($getCSSResult) < 1)
 		{
@@ -33,10 +34,11 @@
 	{
 		global $PHP_SELF, $pageName;
 		global $cssDBRoot, $cssMinLevel;
+		global $rwlEntry;
 
 		$out = "Change style: ";
 
-		$getCSSSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes($cssDBRoot))."' AND rwlEntry.level>=$cssMinLevel ORDER BY rwlEntry.level DESC;";
+		$getCSSSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes($cssDBRoot))."' AND $rwlEntry.level>=$cssMinLevel ORDER BY $rwlEntry.level DESC;";
 		$getCSSResult = mysql_query($getCSSSQL);
 		if(mysql_num_rows($getCSSResult) < 1)
 		{
@@ -83,9 +85,11 @@
 
 	function getCSS($cssToGet)
 	{
+		global $rwlEntry;
+	
 		$cssDBRoot = "RWL\\Settings\\CSS\\";
 
-		$getCSSSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes("^".$cssDBRoot.$cssToGet."$"))."' AND rwlEntry.level=1 ORDER BY rwlEntry.level DESC;";
+		$getCSSSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes("^".$cssDBRoot.$cssToGet."$"))."' AND $rwlEntry.level=1 ORDER BY $rwlEntry.level DESC;";
 		$getCSSResult = mysql_query($getCSSSQL);
 		if(mysql_num_rows($getCSSResult) < 1)
 		{

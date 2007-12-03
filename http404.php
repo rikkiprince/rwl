@@ -5,7 +5,7 @@
 //	exit;
 
 
-	$pageName = urldecode(preg_replace("/\/~rfp102\/rwl\//", "", $_SERVER['REQUEST_URI']));
+	$pageName = urldecode(preg_replace("/\/~rfp07r\/rwl\//", "", $_SERVER['REQUEST_URI']));
 
 	include('rwl.php');
 ?>

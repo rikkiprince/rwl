@@ -7,11 +7,10 @@
 	 * Editable settings
 	 **************************************/
 
-	include('../admin/db/rwl_dev_mysql.inc');
+	
+	include("./settings.php");
 
-	$rwlMain = "Home";
-	$rwlTitle = "AIBO Internship";
-	$rwlTableNamePrefix = "";
+	include($mysqlDetailsFileName);
 
 	/*******/
 
@@ -32,18 +31,51 @@
 
 	function registerGlobalPOST($name)
 	{
-		global ${$name};
-		
-		if(isset($_POST[$name]))
-			${$name} = $_POST[$name];
+		registerGlobal($name, "post");
 	}
 
 	function registerGlobalGET($name)
 	{
+		registerGlobal($name, "get");
+	}
+
+	function registerGlobal($name, $order="postget")
+	{
 		global ${$name};
 		
 		if(isset($_GET[$name]))
-			${$name} = $_GET[$name];
+			$get = $_GET[$name];
+		if(isset($_POST[$name]))
+			$post = $_POST[$name];
+			
+		$order = strtolower($order);
+			
+		switch($order)
+		{
+			case 'postget':
+				if(isset($post))
+					${$name} = $post;
+				elseif(isset($get))
+					${$name} = $get;
+				break;
+				
+			case 'getpost':
+				if(isset($get))
+					${$name} = $get;
+				elseif(isset($post))
+					${$name} = $post;
+				break;
+				
+			case 'post':
+				if(isset($post))
+					${$name} = $post;
+				break;
+				
+			case 'get':
+				if(isset($get))
+					${$name} = $get;
+				break;
+		}
 	}
 
 
@@ -60,28 +92,28 @@
 	registerGlobalGET('cm');
 	registerGlobalGET('cy');
 	
-	registerGlobalGET('action');
+	registerGlobal('action');
 	
-	registerGlobalPOST('submit');
-	if(!isset($submit))
-		registerGlobalGET('submit');
+	registerGlobal('submit');
 	
-	registerGlobalGET('login');
-	registerGlobalGET('enterLogin');
+	registerGlobal('login');
+	registerGlobal('enterLogin');
 	
-	registerGlobalGET('un');
-	registerGlobalGET('pw');
+	registerGlobalPOST('un');
+	registerGlobalPOST('pw');
 	
 	registerGlobalGET('for');
 	
+	registerGlobalGET('css');
 	
-	/*registerGlobalGET('');
-	registerGlobalGET('');
-	registerGlobalGET('');
-	registerGlobalGET('');
-	registerGlobalGET('');
-	registerGlobalGET('');
-	registerGlobalGET('');*/
+	
+	/*registerGlobal('');
+	registerGlobal('');
+	registerGlobal('');
+	registerGlobal('');
+	registerGlobal('');
+	registerGlobal('');
+	registerGlobal('');*/
 	/********************/
 
 
@@ -155,7 +187,7 @@
 	$dh = getValidDate($pageName);
 	if($dh)
 	{
-		$getPreviousEntrySQL = "SELECT page FROM rwlEntry WHERE page=DATE_FORMAT(STR_TO_DATE(page, '%Y%m%d'), '%Y%m%d') AND page < '$pageName' ORDER BY page DESC LIMIT 1;";
+		$getPreviousEntrySQL = "SELECT page FROM $rwlEntry WHERE page=DATE_FORMAT(STR_TO_DATE(page, '%Y%m%d'), '%Y%m%d') AND page < '$pageName' ORDER BY page DESC LIMIT 1;";
 		$getPreviousEntryResult = mysql_query($getPreviousEntrySQL);
 		if(mysql_num_rows($getPreviousEntryResult) == 1)
 		{
@@ -175,7 +207,7 @@
 			}
 		}
 
-		$getNextEntrySQL = "SELECT page FROM rwlEntry WHERE page=DATE_FORMAT(STR_TO_DATE(page, '%Y%m%d'), '%Y%m%d') AND page > '$pageName' ORDER BY page ASC LIMIT 1;";
+		$getNextEntrySQL = "SELECT page FROM $rwlEntry WHERE page=DATE_FORMAT(STR_TO_DATE(page, '%Y%m%d'), '%Y%m%d') AND page > '$pageName' ORDER BY page ASC LIMIT 1;";
 		$getNextEntryResult = mysql_query($getNextEntrySQL);
 		if(mysql_num_rows($getNextEntryResult) == 1)
 		{
@@ -243,7 +275,7 @@
 			case 'edit':	// output edit form
 							echo para("Edit page ".ahref("$PHP_SELF?$pageName",$pageName));
 
-							$editPageSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page = '".addslashes($pageName)."' AND rwlEntry.level<=$userLevel;";
+							$editPageSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page = '".addslashes($pageName)."' AND $rwlEntry.level<=$userLevel;";
 							$editPageResult = mysql_query($editPageSQL);
 							
 							if(!isset($submit))
@@ -314,7 +346,7 @@
 										}
 										else
 										{
-											$getEntrySQL = "SELECT * FROM rwlEntry WHERE page='".addslashes($pageName)."' AND level='$i';";
+											$getEntrySQL = "SELECT * FROM $rwlEntry WHERE page='".addslashes($pageName)."' AND level='$i';";
 											$getEntryResult = mysql_query($getEntrySQL);
 											if(mysql_num_rows($getEntryResult) < 1)
 											{
@@ -327,8 +359,8 @@
 												$entryID = $entry->id;
 												echo para("Entry ID: $entryID");
 
-												$insertDifferenceSQL = "INSERT INTO rwlHistory(entry, diff, editor, edited, eip) VALUES('$entryID','".addslashes($diffString)."','$userID',NOW(),'".$_SERVER['REMOTE_ADDR']."');";
-												$updateEntrySQL = "UPDATE rwlEntry SET content='".addslashes($newContent)."', editor='$userID', edited=NOW() WHERE id='$entryID';";
+												$insertDifferenceSQL = "INSERT INTO $rwlHistory(entry, diff, editor, edited, eip) VALUES('$entryID','".addslashes($diffString)."','$userID',NOW(),'".$_SERVER['REMOTE_ADDR']."');";
+												$updateEntrySQL = "UPDATE $rwlEntry SET content='".addslashes($newContent)."', editor='$userID', edited=NOW() WHERE id='$entryID';";
 												echo para($insertDifferenceSQL);
 												echo para($updateEntrySQL);
 											
@@ -351,8 +383,8 @@
 									elseif(!empty($newContent))
 									{
 										echo para("Does not exist in DB.");
-										$insertEntrySQL = "INSERT INTO rwlEntry(page,content,level,creator,created,cip,editor,edited,eip) VALUES('".addslashes($pageName)."','".addslashes($newContent)."','$i','$userID',NOW(),'".$_SERVER['REMOTE_ADDR']."','$userID',NOW(),'".$_SERVER['REMOTE_ADDR']."');";
-										//$insertEntrySQL = "INSERT INTO rwlEntry(page) VALUES('".addslashes($pageName)."';";
+										$insertEntrySQL = "INSERT INTO $rwlEntry(page,content,level,creator,created,cip,editor,edited,eip) VALUES('".addslashes($pageName)."','".addslashes($newContent)."','$i','$userID',NOW(),'".$_SERVER['REMOTE_ADDR']."','$userID',NOW(),'".$_SERVER['REMOTE_ADDR']."');";
+										//$insertEntrySQL = "INSERT INTO $rwlEntry(page) VALUES('".addslashes($pageName)."';";
 										echo para($insertEntrySQL);
 										
 										$result = mysql_query("begin");
@@ -378,7 +410,7 @@
 							}
 							break;
 			case 'history':	echo para("History for page ".ahref("$PHP_SELF?$pageName",$pageName));
-							$getPageSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page = '".addslashes($pageName)."' ORDER BY rwlEntry.level DESC;";
+							$getPageSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page = '".addslashes($pageName)."' ORDER BY $rwlEntry.level DESC;";
 							$getPageResult = mysql_query($getPageSQL);
 							if(mysql_num_rows($getPageResult) < 1)
 							{
@@ -394,7 +426,7 @@
 									render($entry);
 									echo hr();
 
-									$getHistorySQL = "SELECT * FROM rwlHistory WHERE rwlHistory.entry = '$entry->id' ORDER BY edited DESC;";
+									$getHistorySQL = "SELECT * FROM $rwlHistory WHERE $rwlHistory.entry = '$entry->id' ORDER BY edited DESC;";
 									//echo $getHistorySQL;
 									$temp = $entry;
 									$getHistoryResult = mysql_query($getHistorySQL);
@@ -438,7 +470,7 @@
 								printLoginForm($pageName, $prevAction);
 							}*/
 			case 'search':	echo para("Search!");
-						$getSearchSQL = "SELECT page FROM rwlEntry WHERE content RLIKE '".addslashes($for)."';";
+						$getSearchSQL = "SELECT page FROM $rwlEntry WHERE content RLIKE '".addslashes($for)."';";
 						$getSearchResult = mysql_query($getSearchSQL);
 						if(mysql_num_rows($getSearchResult) < 1)
 						{
@@ -476,7 +508,7 @@
 
 							// now do database access...
 
-							$getPageSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page = '".addslashes($pageName)."' ORDER BY rwlEntry.level DESC;";
+							$getPageSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page = '".addslashes($pageName)."' ORDER BY $rwlEntry.level DESC;";
 							$getPageResult = mysql_query($getPageSQL);
 							if(mysql_num_rows($getPageResult) < 1)
 							{
@@ -522,6 +554,7 @@
 	
 	echo "<div id='utilities'>";
 
+	//echo "Hello: printLogin($pageName, $un, ***************, $action)";
 	printLogin($pageName, $un, $pw, $action);
 	
 	printCalendar($pageName, $cm, $cy);
@@ -634,11 +667,12 @@
 	function printSubPages($page)
 	{
 		global $PHP_SELF;
+		global $rwlEntry;
 
 		//echo para("Subpages:");
-		//$getSubPagesSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes($page))."\\\\\\\[^\\\]*$';";
-		//$getSubPagesSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes("^$page\\[^\]*$"))."';";
-		$getSubPagesSQL = "SELECT * FROM rwlEntry WHERE rwlEntry.page RLIKE '".addslashes(addslashes("^$page\\.*$"))."';";
+		//$getSubPagesSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes($page))."\\\\\\\[^\\\]*$';";
+		//$getSubPagesSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes("^$page\\[^\]*$"))."';";
+		$getSubPagesSQL = "SELECT * FROM $rwlEntry WHERE $rwlEntry.page RLIKE '".addslashes(addslashes("^$page\\.*$"))."';";
 		$getSubPagesResult = mysql_query($getSubPagesSQL);
 
 		//echo para($getSubPagesSQL);
@@ -680,8 +714,9 @@
 	function getLinks()
 	{
 		global $rwlMain;
+		global $rwlEntry;
 
-		$getLinksSQL = "SELECT * FROM rwlEntry WHERE page='".addslashes("$rwlMain\Links")."' AND level=1;";
+		$getLinksSQL = "SELECT * FROM $rwlEntry WHERE page='".addslashes("$rwlMain\Links")."' AND level=1;";
 		//echo para($getLinksSQL);
 		$getLinksResult = mysql_query($getLinksSQL);
 		if(mysql_num_rows($getLinksResult) < 1)
